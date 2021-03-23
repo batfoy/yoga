@@ -40,7 +40,7 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
 
 //timer
 
-    let deadline = '2021-02-21'; //время до которого длится отчет
+    let deadline = '2021-03-10'; //время до которого длится отчет
 
     // узнать промежуток времени между сейчас и дедлайном
     function getTimeRemaining(endtime) { 
@@ -73,9 +73,18 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
         // функция которая обновляет часы каждую секунду
         function updateClock() {
             let t = getTimeRemaining(endtime);
-            hours.textContent = t.hour;
-            minutes.textContent = t.minute;
-            seconds.textContent = t.second;
+
+            // добавляем нуль перед единичной цифрой например 5 => 05
+            function addZero(num){
+                if(num <= 9) {
+                    return '0' + num;
+                } else return num;
+            };
+
+            //подставляем таймер с нулем перед если нужно в верстку
+            hours.textContent = addZero(t.hour);
+            minutes.textContent = addZero(t.minute);
+            seconds.textContent = addZero(t.second);
 
             //условие при котором остановится таймер и значения останутся 00:00:00
             if (t.total <=0) {
@@ -89,4 +98,47 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
     }
 
     setClock('timer', deadline); //вызов функции где в качестве переменных мы указываем название нашего id и deadline как параметр аргумента endtime
+
+    // // modal на одну кнопку
+    // let more = document.querySelector('.more'), // переменная класса с кнопкой
+    //     overlay = document.querySelector('.overlay'), // переменная оверлея
+    //     close = document.querySelector('.popup-close'), // переменная крестика
+        
+
+    // //обработчик события клик, при нажатии оверлей становится блок
+    // more.addEventListener('click', function() {
+    //     overlay.style.display = 'block';
+    //     this.classList.add('more-splash'); //добавляем класс к кнопке more анимация
+    //     document.body.style.overflow = 'hidden'; //запретить прокрутку при всплытии оверлея
+    // });
+    // //обработчик события клик, при нажатии close закрыть оверлей
+    // close.addEventListener('click', function() {
+    //     overlay.style.display = 'none';
+    //     more.classList.remove('more-splash');
+    //     document.body.style.overflow = ''; //отменить запрет прокрутки при закрытии оверлея
+    // });
+
+
+    // modal на несколько кнопок
+    let btn = document.querySelectorAll('.description-btn, .more'),
+        overlay = document.querySelector('.overlay'),
+        close = document.querySelector('.popup-close');
+         
+
+        //используем метод перебора  forEach 
+    btn.forEach(function(item) { // в функции указываем аргумент btn как название массива с нашими классами
+        item.addEventListener('click', function() { //навешиваем событие клик на кнопку
+            overlay.style.display = 'block'; //при клике оверлей становится дисплей блок
+            this.classList.add('more-splash'); //метод this как обращение к item в обработчике событий добавляем к btn новый класс
+            document.body.style.overflow = 'hidden';    //запрещаем прокрутку при оверлее
+        })
+    });
+
+    close.addEventListener('click', function() { //навешиваем событие клик на close
+        overlay.style.display = 'none'; //закрываем оверлей
+        document.body.style.overflow = ''; //отменяем отмену прокрутки
+        btn.forEach(function(item) {
+            item.classList.remove('more-splash');
+        })
+    });
 });
