@@ -40,7 +40,7 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
 
 //timer
 
-    let deadline = '2021-03-10'; //время до которого длится отчет
+    let deadline = '2021-12-31'; //время до которого длится отчет
 
     // узнать промежуток времени между сейчас и дедлайном
     function getTimeRemaining(endtime) { 
@@ -48,14 +48,14 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
         //получаем секунды, минуты, часы округлив до целого, получаем остаток до елого с помощью %
         seconds = Math.floor((t/1000) % 60),
         minutes = Math.floor((t/1000/60) % 60),
-        hours = Math.floor((t/1000/60/60));
         //если нужны часы и дни
-        // hours = Math.floor((t/1000/60/60) % 24),
-        // days = Math.floor((t/1000/60/60/24));
+        hours = Math.floor((t/1000/60/60) % 24),
+        days = Math.floor((t/1000/60/60/24));
 
         //говорим чтобы функция вернула обьект в виде: пара ключ - значение
         return {
             'total' : t,
+            'days' : days,
             'hour' : hours,
             'minute' : minutes,
             'second' : seconds
@@ -65,6 +65,7 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
     //превращаем статическую функцию в динамическую
     function setClock(id, endtime) { //функция которая выставляет и запускает наши часы
         let timer = document.getElementById(id),
+            days = timer.querySelector('.days'),
             hours = timer.querySelector('.hours'),
             minutes = timer.querySelector('.minutes'),
             seconds = timer.querySelector('.seconds'),
@@ -82,6 +83,7 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
             };
 
             //подставляем таймер с нулем перед если нужно в верстку
+            days.textContent = addZero(t.days);
             hours.textContent = addZero(t.hour);
             minutes.textContent = addZero(t.minute);
             seconds.textContent = addZero(t.second);
@@ -89,6 +91,7 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
             //условие при котором остановится таймер и значения останутся 00:00:00
             if (t.total <=0) {
                 clearInterval(timeInterval);
+                days.textContent = '00';
                 hours.textContent = '00';
                 minutes.textContent = '00';
                 seconds.textContent = '00';
@@ -142,7 +145,63 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
         })
     });
 
-    //Form отправка при помощиAJAX
+    // //Form отправка при помощиAJAX 
+
+    // //создаем объект с сообщениями
+    // let message = {
+    //     loading: 'Загрузка...',
+    //     success: 'Спасибо! Скоро мы с вами свяжемся!',
+    //     failure: 'Что-то пошло не так...'
+    // }
+
+    // //Получаем эллементы со страницы, с которыми мы будем работать (форму, инпуты...)
+    // let form = document.querySelector('.main-form'), //1я форма
+    //     formBottom = document.getElementById('form'), //2я форма
+    //     input = form.getElementsByTagName('input'),
+    //     statusMessage = document.createElement('div'); //эллемент оповещающий пользователя об отправки сообщения
+    //     statusMessage.classList.add('status'); //присвоим созданному диву класс
+
+    // //вешаем обработчик событий на форму с событием submit т.е. отправление 
+    // function sendForm(elem) { //создаем доп функцию чтобы обьединить обе формы со страницы в одном эллементе elem
+    //     elem.addEventListener('submit', function(event) {
+    //         event.preventDefault();
+    //         //оповещаем пользователя об отправке
+    //         elem.appendChild(statusMessage);
+    
+    //         //создаем запрос, чтобы отправить данные на сервер при помощи AJAX
+    //         let request = new XMLHttpRequest();
+    //         request.open('POST', 'server.php'); //метод post т.к. мы отправляем данные
+    //         request.setRequestHeader ('Content-type', 'application/x-www-form-urlencoded');
+    
+    //         //получаем данные которые ввел пользователь используя объект formData (создает структуру в формате ключ-значение)
+    //         let formData = new FormData(elem); //создаем переменную, в которую будем записывать все данные из формы
+    //         request.send(formData);  //отправляем запрос на сервер с данными
+    
+    //         //наблюдаем за изменениями состояния нашего запроса
+    //         request.addEventListener('readystatechange', function() {
+    //              //если долго грузится, вызываем соответствующее сообщение
+    //             if (request.readyState < 4) {   
+    //                 statusMessage.innerHTML = message.loading; //в эллемент statusmessage добавляем loading
+    //             } else if (request.readyState === 4 && request.status == 200) { //иначе все ок
+    //                 statusMessage.innerHTML = message.success;
+    //             } else {
+    //                 statusMessage.innerHTML = message.failure; //иначе ошибка
+    //             }
+    //         });
+    
+    //         //очищаем форму после отправления
+    //             for (let i = 0; i < input.length; i++) {
+    //                 input[i].value = ''; // у каждого input возьмем value и превратим его в пустую строку
+    //             }
+    //     });
+    // }
+
+    // sendForm(form);
+    // sendForm(formBottom);
+
+    
+
+    //Form отправка при помощиAJAX с промисами PROMISE
 
     //создаем объект с сообщениями
     let message = {
@@ -152,42 +211,161 @@ window.addEventListener('DOMContentLoaded', function() { // запускаем �
     }
 
     //Получаем эллементы со страницы, с которыми мы будем работать (форму, инпуты...)
-    let form = document.querySelector('.main-form'),
+    let form = document.querySelector('.main-form'), //1я форма
+        formBottom = document.getElementById('form'), //2я форма
         input = form.getElementsByTagName('input'),
         statusMessage = document.createElement('div'); //эллемент оповещающий пользователя об отправки сообщения
         statusMessage.classList.add('status'); //присвоим созданному диву класс
 
     //вешаем обработчик событий на форму с событием submit т.е. отправление 
-    form.addEventListener('submit', function(event) {
-        event.preventDefault();
-        //оповещаем пользователя об отправке
-        form.appendChild(statusMessage);
+    function sendForm(elem) { //создаем доп функцию чтобы обьединить обе формы со страницы в одном эллементе elem
+        elem.addEventListener('submit', function(event) {
+            event.preventDefault();
+            //оповещаем пользователя об отправке
+            elem.appendChild(statusMessage);
+            
+            let formData = new FormData(elem); //создаем переменную, в которую будем записывать все данные из формы
 
-        //создаем запрос, чтобы отправить данные на сервер при помощи AJAX
-        let request = new XMLHttpRequest();
-        request.open('POST', 'server.php'); //метод post т.к. мы отправляем данные
-        request.setRequestHeader ('Content-type', 'application/x-www-form-urlencoded');
+            function postData(data) { // функция которая возвращает новое обещание new promise
+                return new Promise(function(resolve, reject) {
+                    //создаем запрос, чтобы отправить данные на сервер при помощи AJAX
+                    let request = new XMLHttpRequest();
+                    request.open('POST', 'server.php'); //метод post т.к. мы отправляем данные
+                    request.setRequestHeader ('Content-type', 'application/x-www-form-urlencoded');
+            
+                    //получаем данные которые ввел пользователь используя объект formData (создает структуру в формате ключ-значение)
+                    
+                    request.send(data);  //отправляем запрос на сервер с данными
+            
+                    //наблюдаем за изменениями состояния нашего запроса
+                    request.addEventListener('readystatechange', function() {
+                        //если долго грузится, вызываем соответствующее сообщение
+                        if (request.readyState < 4) {   
+                            resolve() // если все хорошо (идет загрузка) то resolve
+                        } else if (request.readyState === 4 && request.status == 200) { //иначе все ок
+                            resolve() //если все хорошо (все загрузилось) то resolve
+                        } else {
+                            reject() //иначе (ошибка) reject 
+                        }
+                    });
+                })
+            }
+    
+            //очищаем форму после отправления
+                function clearInput() {
+                    for (let i = 0; i < input.length; i++) {
+                        input[i].value = ''; // у каждого input возьмем value и превратим его в пустую строку
+                    }
+                }
+                postData(formData)
+                    .then(()=> statusMessage.innerHTML = message.loading)
+                    .then(()=> statusMessage.innerHTML = message.success)
+                    .catch(()=> statusMessage.innerHTML = message.failure)
+                    .then(clearInput)
+        });
+    }
 
-        //получаем данные которые ввел пользователь используя объект formData (создает структуру в формате ключ-значение)
-        let formData = new FormData(form); //создаем переменную, в которую будем записывать все данные из формы
-        request.send(formData);  //отправляем запрос на сервер с данными
+    sendForm(form);
+    sendForm(formBottom);
+   
 
-        //наблюдаем за изменениями состояния нашего запроса
-        request.addEventListener('readystatechange', function() {
-             //если долго грузится, вызываем соответствующее сообщение
-            if (request.readyState < 4) {   
-                statusMessage.innerHTML = message.loading; //в эллемент statusmessage добавляем loading
-            } else if (request.readyState === 4 && request.status == 200) { //иначе все ок
-                statusMessage.innerHTML = message.success;
+    //slider 
+
+    let slideIndex = 1, //переменная котоая отвечает за показ первого слайда в начале загрузки страницы (параметр текущего слайда)
+        slides = document.querySelectorAll('.slider-item'), // получаем все слайды на странице
+        prev = document.querySelector('.prev'), 
+        next = document.querySelector('.next'),
+        dotsWrap = document.querySelector('.slider-dots'), //обертка точек для использования делегирования событий
+        dots = document.querySelectorAll('.dot') // все точки со страницы
+
+    //функция проверяет слайды, скрывает все слайды кроме определенного а также убирает классы активности с точек кроме определенного
+    function showSlides(n) {
+        //проверка если n > количества слайдов, то возвращаемся к 1, если меньше, то к последнему.
+        if (n > slides.length) {
+            slideIndex = 1;
+        }
+        if (n < 1) {
+            slideIndex = slides.length
+        }
+        //перебераем все слайды, скрываем и показываем только нжный
+        slides.forEach((item) => item.style.display = 'none'); //современный метод
+        //старый метод
+        // for (let i = 0; i < slides.length; i++) {
+        //     slides[i].style.display = 'none';
+        // }
+        dots.forEach((item) => item.classList.remove('dot-active'));
+        //показываем конкретный слайд и активность точки при загрузке страницы
+        slides[slideIndex - 1].style.display = 'block'; //конвертируем обычную нумерацию в js (1 в 0)
+        dots[slideIndex - 1].classList.add('dot-active');
+    }
+    showSlides(slideIndex);
+
+    //функция увеличивает параметр slideIndex и вызывает showSlides с измененным параметром
+    function plusSlides(n) {
+        showSlides(slideIndex += n);
+    }
+    //функция принимает текущий параметр (при клике на конкретную точку будет показываться конкретный слайд )
+    function currentSlide(n) {
+        showSlides(slideIndex = n);
+    }
+
+    prev.addEventListener('click', function() {
+        plusSlides(-1)
+    });
+    next.addEventListener('click', function() {
+        plusSlides(1);
+    });
+
+    //делегирование при клике на точки и  цикл не привязан к стилям, взаимодействует только с эллементами
+    dotsWrap.addEventListener('click', function(event) {
+        for (let i = 0; i < dots.length; i++) {
+            if (event.target.classList.contains('dot') && event.target == dots[i]) {
+                currentSlide(i+1);
+            }
+        }
+    });
+
+    //calc
+    let persons = document.querySelectorAll('.counter-block-input')[0], //инпут с количеством людей
+        restDays = document.querySelectorAll('.counter-block-input')[1], //инпут с количеством дней
+        place = document.getElementById('select'), //выбор места
+        totalValue = document.getElementById('total'), //общая сумма  
+        personsSum = 0, //переменная необходимая для расчета людей по умолчанию 0
+        daysSum = 0, //переменная необходимая для расчета дней по умолчанию 0
+        total = 0; //переменная необходимая для расчета общей суммы по умолчанию 0
+
+        totalValue.innerHTML = 0; //ставим в общую сумму по умолчанию 0
+
+        //вводим количество людей в инпут persons и производим расчет
+        persons.addEventListener('change', function() {
+            personsSum = +this.value; //записываем в personsSum значение которое пользователь ввел в инпут persons(знак + говорит что это число)
+            total = (daysSum + personsSum)*4000;
+
+            if(restDays.value == '' || restDays.value == 0 || persons.value == '' || persons.value == 0) {
+                totalValue.innerHTML = 0;
             } else {
-                statusMessage.innerHTML = message.failure; //иначе ошибка
+                totalValue.innerHTML = total;
             }
         });
 
-        //очищаем форму после отправления
-            for (let i = 0; i < input.length; i++) {
-                input[i].value = ''; // у каждого input возьмем value и превратим его в пустую строку
+        restDays.addEventListener('change', function() {
+            daysSum = +this.value; //записываем в dayssSum значение которое пользователь ввел в инпут restDays(знак + говорит что это число)
+            total = (daysSum + personsSum)*4000;
+
+            if(persons.value == '' || persons.value == 0 || restDays.value == '' || restDays.value == 0) {
+                totalValue.innerHTML = 0;
+            } else {
+                totalValue.innerHTML = total;
             }
-    });
+        });
+
+        place.addEventListener('change', function() {
+            if (restDays.value == '' || persons.value == '') {
+                totalValue.innerHTML = 0;
+            } else {
+                let a = total //чтобы избежать баг с селектом (каждый раз при переключении селекта будет умножаться на кэф селекта)
+                totalValue.innerHTML = a * this.options[this.selectedIndex].value;
+            }
+        });
 
 });
